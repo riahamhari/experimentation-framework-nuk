@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "ES2021", // Modern JS: let/const, async/await
+		"module": "NodeNext", // ESM modules
+		"moduleResolution": "NodeNext",
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"strict": false,
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"baseUrl": ".", // Project root
+		"paths": {
+			"@utils/*": ["utilities/*.ts"] // Maps @utils/ to utilities folder
+		},
+		"outDir": "dist", // Optional: TS emit directory if needed
+		"declaration": true // Optional: generates type declarations
+	},
+	"include": [
+		"watch-tickets.ts", // Watcher
+		"utilities/**/*", // Utilities TS files
+		"**/*.ts", // All other TypeScript files
+		"utilities/buildHelpers",
+	],
+	"exclude": ["node_modules", "**/build/**"]
+}

@@ -1,0 +1,85 @@
+@use 'sass:map';
+
+// Media query breakpoints
+$media-queries: (
+	'sm': 580,
+	'md': 760,
+	'lg': 960,
+	'xl': 1048,
+	'xxl': 1200,
+);
+
+// Helper function to get breakpoint value safely
+@function bp($key) {
+	@if map.has-key($media-queries, $key) {
+		@return map.get($media-queries, $key);
+	} @else {
+		@error "ERROR: Breakpoint `#{$key}` does not exist in $media-queries map.";
+	}
+}
+
+// Media query mixins
+@mixin max($bp-key) {
+	@media screen and (max-width: #{bp($bp-key) - 0.02}px) {
+		@content;
+	}
+}
+
+@mixin min($bp-key) {
+	@media screen and (min-width: #{bp($bp-key)}px) {
+		@content;
+	}
+}
+
+@mixin min-max($min-key, $max-key) {
+	// Auto-swap if min > max
+	$min-val: bp($min-key);
+	$max-val: bp($max-key);
+
+	@if $min-val > $max-val {
+		$tmp: $min-val;
+		$min-val: $max-val;
+		$max-val: $tmp;
+	}
+
+	@media screen and (min-width: #{$min-val}px) and (max-width: #{ $max-val - 0.02 }px) {
+		@content;
+	}
+}
+
+// Usage
+// -----
+//
+//    @use 'sass/base' as *;
+//
+//    .container {
+//    	@include max(sm) {
+//    		background: blue;
+//    	}
+//
+//    	@include min(xl) {
+//    		background: green;
+//    	}
+//
+//    	@include min-max(sm, lg) {
+//    		color: red;
+//    	}
+//    }
+//
+// Output:
+//
+//    @media screen and (max-width: 579.98px) {
+//    	.container {
+//    		background: blue;
+//    	}
+//    }
+//    @media screen and (min-width: 1048px) {
+//    	.container {
+//    		background: green;
+//    	}
+//    }
+//    @media screen and (min-width: 579.98px) and (max-width: 960px) {
+//    	.container {
+//    		color: red;
+//    	}
+//    }
