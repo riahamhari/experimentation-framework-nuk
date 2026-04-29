@@ -23,5 +23,5 @@
 		"**/*.ts", // All other TypeScript files
 		"utilities/buildHelpers",
 	],
-	"exclude": ["node_modules", "**/build/**"]
+	"exclude": ["node_modules", "**/build/**", "utilities/templates/**"]
 }

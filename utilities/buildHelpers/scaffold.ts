@@ -87,7 +87,7 @@ function createVariantFiles(
 function createProjectFiles(targetFolder: string): void {
 	const utilsFolder = `${targetFolder}/utils`;
 	const filesData: FileData[] = [
-		{ location: `${utilsFolder}/constants.ts`, content: '' },
+		{ location: `${utilsFolder}/constants.ts`, content: `export const SELECTORS = {\n\tel: '.some-class',\n};\n` },
 		{ location: `${utilsFolder}/functions.ts`, content: '' },
 	];
 
@@ -109,7 +109,7 @@ function createProjectFiles(targetFolder: string): void {
  * );
  */
 export function createFolderStructure(data: ScaffoldData, devConfig: DevConfig, options: ScaffoldOptions = {}): void {
-	const { folderToUse, testId, testFullName } = data;
+	const { folderToUse, testId } = data;
 	const { skipGit = false, createBranch } = options;
 	const currentYear = new Date().getUTCFullYear();
 	const developer = devConfig.id;
