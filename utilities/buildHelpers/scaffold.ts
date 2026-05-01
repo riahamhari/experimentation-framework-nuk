@@ -73,7 +73,7 @@ function createVariantFiles(
 	const filesData: FileData[] = [
 		{ location: `${projectFolder}/source.ts`, content: templates.source },
 		{ location: `${projectFolder}/source.scss`, content: templates.sass },
-		{ location: `${projectFolder}/testConfig.js`, content: templates.config },
+		{ location: `${projectFolder}/testConfig.ts`, content: templates.config },
 	];
 
 	createFilesFromList(filesData);

@@ -74,7 +74,7 @@ async function compileTicket(ticketFolder: string) {
 		// Import testConfig dynamically with fallback
 		let testConfig: TestConfig;
 		try {
-			const testConfigPath = path.join(srcDir, 'testConfig.js');
+			const testConfigPath = path.join(srcDir, 'testConfig.ts');
 			const normalisedPath = path.relative(process.cwd(), testConfigPath).replaceAll('\\', '/');
 			const { testID, testName, developerID, developerName, variant } = await import('./' + normalisedPath);
 
@@ -108,11 +108,11 @@ async function compileTicket(ticketFolder: string) {
 		});
 
 		// Validate TypeScript first
-		await validateTypeScript(ticketFolder);
+		await validateTypeScript();
 
 		// Compile TypeScript with esbuild
 
-		let jsResult;
+		let jsResult: esbuild.BuildResult;
 		try {
 			jsResult = await esbuild.build({
 				entryPoints: [tsFile],
@@ -153,11 +153,17 @@ async function compileTicket(ticketFolder: string) {
 
 		const jsOutputFile = path.join(buildDir, 'output.js');
 		const cssOutputFile = path.join(buildDir, 'output.css');
+		const snippetOutputFile = path.join(buildDir, 'snippet.js');
 
 		const compiledJS = jsResult.outputFiles[0].text.replace(/^\s*\/\/.*(?:\.ts|\.js|utilities|src).*$/gm, '').trim();
 
+		const snippet = compiledCSS
+			? `${compiledJS}\ndocument.body.insertAdjacentHTML('afterbegin', '<style>${compiledCSS.replace(/\n/g, ' ')}</style>');`
+			: compiledJS;
+
 		createFile(jsOutputFile, compiledJS);
 		createFile(cssOutputFile, compiledCSS);
+		createFile(snippetOutputFile, snippet);
 
 		console.log(
 			`✅ ${chalk.bgGreen('Successful build')} ${path.relative(rootDir, ticketFolder)} in ${Date.now() - startTime}ms\n`
@@ -229,9 +235,9 @@ async function rebuildTicketsInDirectory(directory: string) {
  * @param ticketFolder - Absolute path to the ticket folder
  * @throws {Error} When TypeScript validation fails
  */
-async function validateTypeScript(ticketFolder: string) {
+async function validateTypeScript() {
 	try {
-		const { stdout, stderr } = await execAsync(`npx tsc --noEmit --skipLibCheck`);
+		await execAsync(`npx tsc --noEmit --skipLibCheck`);
 	} catch (err) {
 		if (err.stdout || err.stderr) {
 			throw new Error(`TypeScript errors found:\n${err.stdout || err.stderr}`);

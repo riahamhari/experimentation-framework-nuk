@@ -4,21 +4,19 @@ import { devConfig } from './config.js';
 import { validateDeveloperConfig, generateWeekBasedFolder } from '@utils/buildHelpers/helpers';
 import { showPrompts } from '@utils/buildHelpers/prompts';
 import { createFolderStructure } from '@utils/buildHelpers/scaffold';
-import { createAndCheckoutBranch } from '@utils/buildHelpers/git';
 
 clear();
-console.log('---- Opti Framework setup ----\n');
+console.log('---- Experimentation Framework setup ----\n');
 
 (function () {
 	try {
 		validateDeveloperConfig(devConfig);
 		console.log(`Hi ${devConfig.name}\n`);
-		
+
 		const folderName = generateWeekBasedFolder();
 		showPrompts(folderName, (data) => {
 			createFolderStructure(data, devConfig, {
-				skipGit: false,
-				createBranch: createAndCheckoutBranch,
+				skipGit: true,
 			});
 		});
 	} catch (err) {
