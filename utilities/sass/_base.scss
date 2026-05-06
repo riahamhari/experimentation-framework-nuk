@@ -1,20 +1,28 @@
 @use 'sass:map';
+@use 'sass:meta';
+@use 'sass:math';
 
 // Media query breakpoints
 $media-queries: (
-	'sm': 580,
-	'md': 760,
-	'lg': 960,
+	'sm': 520,
+	'md': 768,
+	'lg': 992,
 	'xl': 1048,
 	'xxl': 1200,
 );
 
-// Helper function to get breakpoint value safely
-@function bp($key) {
-	@if map.has-key($media-queries, $key) {
-		@return map.get($media-queries, $key);
+// Resolves a named breakpoint key or a custom numeric value to a unitless px number
+@function bp($val) {
+	@if meta.type-of($val) == 'string' {
+		@if map.has-key($media-queries, $val) {
+			@return map.get($media-queries, $val);
+		} @else {
+			@error "ERROR: Breakpoint `#{$val}` does not exist in $media-queries map.";
+		}
+	} @else if meta.type-of($val) == 'number' {
+		@return if(math.is-unitless($val), $val, math.div($val, ($val * 0 + 1)));
 	} @else {
-		@error "ERROR: Breakpoint `#{$key}` does not exist in $media-queries map.";
+		@error "ERROR: Breakpoint `#{$val}` must be a named key (sm, md, lg, xl, xxl) or a number (e.g. 1024px).";
 	}
 }
 
@@ -53,17 +61,12 @@ $media-queries: (
 //    @use 'sass/base' as *;
 //
 //    .container {
-//    	@include max(sm) {
-//    		background: blue;
-//    	}
-//
-//    	@include min(xl) {
-//    		background: green;
-//    	}
-//
-//    	@include min-max(sm, lg) {
-//    		color: red;
-//    	}
+//    	@include max(sm) { ... }          // named breakpoint
+//    	@include min(xl) { ... }          // named breakpoint
+//    	@include min(1024px) { ... }      // custom value
+//    	@include max(900px) { ... }       // custom value
+//    	@include min-max(sm, lg) { ... }  // named breakpoints
+//    	@include min-max(600px, lg) { ... } // mixed
 //    }
 //
 // Output:
