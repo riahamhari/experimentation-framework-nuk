@@ -139,12 +139,14 @@ export function createFolderStructure(data: ScaffoldData, devConfig: DevConfig, 
 
 	variantsArr.forEach((variant) => {
 		const variantFolder = `${targetFolder}/${variant}`;
-		// Create all required directories
 		createDirectories(variantFolder);
-
-		// Create project files
 		createVariantFiles(variantFolder, testId, testName, variant, devConfig);
 	});
+
+	// Create shared code folder
+	const sharedFolder = `${targetFolder}/shared-code`;
+	createDirectories(sharedFolder);
+	createVariantFiles(sharedFolder, testId, testName, 'shared-code', devConfig);
 
 	console.log(`New folder structure ${targetFolder} created\n`);
 	console.log('To start watcher without going through this process use "npm start"\n');
