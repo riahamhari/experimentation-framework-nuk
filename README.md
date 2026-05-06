@@ -18,7 +18,7 @@ Clone the repository.
 
 Navigate to the folder.
 
-Install the dependencies using `npm ci`.
+Install the dependencies using `npm install`.
 
 Create a `config.js` from the sample file (`config.sample.js`) in the root directory and update the `id` and `name` values with your developer details.
 
@@ -42,6 +42,10 @@ To start the compiler without creating a new experiment use `npm start`.
         utils/
           constants.ts   ← selectors and shared constants
           functions.ts   ← shared helper functions
+        shared-code/     ← optional, runs across all variants
+          src/
+            source.ts
+            testConfig.ts
         {variant}/
           src/
             source.ts    ← main experiment code
@@ -58,33 +62,46 @@ To start the compiler without creating a new experiment use `npm start`.
 Each variant's `source.ts` is pre-populated with this template:
 
 ```typescript
-import { createLogger, createTracker } from '@utils/ts/helpers/Optimizely';
+import { sendTracking } from '@utils/ts/helpers/Optimizely';
 import { SELECTORS } from '../../utils/constants.ts';
 import { testID } from './testConfig.ts';
 
-const { waitForElement } = window['optimizely'].get('utils');
+const { waitForElement } = window.optimizely.get('utils');
+
+const track = sendTracking(testID);
+
+waitForElement('body').then(() => {
+
+});
+```
+
+The `shared-code/src/source.ts` template also sets the QA cookie on first load and fires a tracking event to confirm the experiment is running:
+
+```typescript
+import { sendTracking } from '@utils/ts/helpers/Optimizely';
+import { SELECTORS } from '../../utils/constants.ts';
+import { testID } from './testConfig.ts';
+
+const { waitForElement } = window.optimizely.get('utils');
 
 if (location.href.includes('cfQA=true')) {
   document.cookie = 'cfQA=true;path=/';
 }
 
-const log = createLogger(testID);
-const track = createTracker(log);
+const track = sendTracking(testID);
 
 waitForElement('body').then(() => {
-  log('experiment running');
-
+  track('experiment running');
 });
 ```
 
-- `log(msg)` — only prints to console when the `cfQA` cookie is present, prefixed with the experiment ID
-- `track(eventName)` — pushes an event to Optimizely and logs it via `log`
+- `track(eventName)` — pushes `{testID}_{eventName}` to Optimizely and logs it when the `cfQA` cookie is present
 - `SELECTORS` — defined in `utils/constants.ts`, shared across all variants
-- `waitForElement` — provided by `window['optimizely'].get('utils')`
+- `waitForElement` — provided by `window.optimizely.get('utils')`
 
 ## QA testing
 
-Add `cfQA=true` to the URL query string on first load to set the QA cookie. All `log()` calls will then print to the browser console.
+Add `cfQA=true` to the URL query string on first load to set the QA cookie. All tracking calls will then print to the browser console, prefixed with the experiment ID.
 
 To test in the browser, paste the contents of `snippet.js` into the browser console or Sources tab. It includes the compiled JS with CSS injected inline.
 
@@ -116,45 +133,63 @@ export const developerName = 'Riah Amhari';
 export const variant = 'V1';
 ```
 
-`testID` is imported directly into `source.ts` and used as the logger prefix.
+`testID` is imported directly into `source.ts` and used as the event prefix and logger prefix.
 
 ## Utility functions
 
 Shared utilities live in `utilities/ts/` and are imported using the `@utils` alias:
 
 ```typescript
-import { createLogger, createTracker } from '@utils/ts/helpers/Optimizely';
-import { createHTMLElement, queryAll } from '@utils/ts/helpers/DOM';
-import { debounce, requestJson } from '@utils/ts/helpers/Misc';
+import { sendTracking } from '@utils/ts/helpers/Optimizely';
+import { createHTMLElement } from '@utils/ts/helpers/DOM';
+import { debounce, createVariantStore } from '@utils/ts/helpers/Misc';
 ```
 
 ### Optimizely helpers (`@utils/ts/helpers/Optimizely`)
 
 | Function | Description |
 |----------|-------------|
-| `createLogger(expNo)` | Returns a `log(msg)` function that logs to console only when `cfQA` cookie is present |
-| `createTracker(log)` | Returns a `track(eventName)` function that pushes to Optimizely and calls `log` |
+| `sendTracking(testID)` | Returns a `track(eventName)` function that pushes `{testID}_{eventName}` to Optimizely and logs it when the `cfQA` cookie is present |
+| `createLogger(testID)` | Returns a `log(msg)` function that logs to console only when the `cfQA` cookie is present |
 
 ### DOM helpers (`@utils/ts/helpers/DOM`)
 
 | Function | Description |
 |----------|-------------|
 | `createHTMLElement(tag, options)` | Creates an HTML element with classes, attributes, styles, and events |
-| `queryAll(root, selector)` | Queries elements including shadow DOM using `::` separator |
-| `queryWithAlternative(root, selectors)` | Queries with fallback selectors |
-| `getPath(obj, path)` | Gets a nested value using dot-notation |
-| `getPathWithAlternative(obj, paths)` | Gets a nested value with fallback paths |
-| `updateElementAttribute(element, attr)` | Updates a single attribute, optionally extending existing value |
 
 ### Misc helpers (`@utils/ts/helpers/Misc`)
 
 | Function | Description |
 |----------|-------------|
-| `debounce(fn, wait)` | Debounces a function |
-| `compareDate(date1, type, date2)` | Compares two dates |
-| `requestJson(options)` | Fetch wrapper returning parsed JSON |
-| `createAsyncCache(factory)` | Runs a Promise factory once and caches the result |
-| `responseWatch(pattern, callback)` | Watches for specific fetch responses by URL pattern |
+| `debounce(fn, wait)` | Debounces a function, default 300ms |
+| `createVariantStore()` | Returns a `{ set, get }` store for sharing the active variant between `source.ts` and `utils/functions.ts` |
+
+#### Using `createVariantStore`
+
+Instantiate once in `utils/functions.ts` and export the pair:
+
+```typescript
+// utils/functions.ts
+import { createVariantStore } from '@utils/ts/helpers/Misc';
+
+const variantStore = createVariantStore();
+export const setVariant = variantStore.set;
+export const getVariant = variantStore.get;
+```
+
+Set it in `source.ts`:
+
+```typescript
+import { setVariant } from '../../utils/functions.ts';
+setVariant(v);
+```
+
+Read it anywhere in `utils/functions.ts`:
+
+```typescript
+const variant = getVariant();
+```
 
 ## Sass variables and mixins
 
