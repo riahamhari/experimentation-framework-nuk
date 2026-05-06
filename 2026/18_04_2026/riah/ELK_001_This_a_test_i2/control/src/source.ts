@@ -3,7 +3,7 @@ import { createLogger, createTracker } from '@utils/ts/helpers/Optimizely';
 import { SELECTORS } from '../../utils/constants.ts';
 import { testID } from './testConfig.ts';
 
-const { waitForElement } = window['optimizely'].get('utils');
+const { waitForElement } = window.optimizely.get('utils');
 
 if (location.href.includes('cfQA=true')) {
 	document.cookie = 'cfQA=true;path=/';

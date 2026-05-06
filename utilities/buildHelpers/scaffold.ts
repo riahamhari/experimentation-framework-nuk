@@ -61,12 +61,13 @@ function createVariantFiles(
 	testId: string,
 	testName: string,
 	variant: string,
-	devConfig: DevConfig
+	devConfig: DevConfig,
+	sourceTemplate = 'defaultSource.ts'
 ): void {
 	const projectFolder = `${targetFolder}/src`;
 	const templates = {
 		sass: readFile('defaultSass.scss'),
-		source: readFile('defaultSource.ts'),
+		source: readFile(sourceTemplate),
 		config: getDefaultConfigFileContent({ testId, testName, variant }, devConfig),
 	};
 
@@ -146,7 +147,7 @@ export function createFolderStructure(data: ScaffoldData, devConfig: DevConfig, 
 	// Create shared code folder
 	const sharedFolder = `${targetFolder}/shared-code`;
 	createDirectories(sharedFolder);
-	createVariantFiles(sharedFolder, testId, testName, 'shared-code', devConfig);
+	createVariantFiles(sharedFolder, testId, testName, 'shared-code', devConfig, 'defaultSharedSource.ts');
 
 	console.log(`New folder structure ${targetFolder} created\n`);
 	console.log('To start watcher without going through this process use "npm start"\n');

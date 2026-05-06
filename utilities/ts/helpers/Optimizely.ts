@@ -19,6 +19,6 @@ export const createLogger = (expNo: string) =>
  */
 export const createTracker = (log: (msg: unknown) => void) =>
 	(eventName: string): void => {
-		window['optimizely'].push({ type: 'event', eventName });
+		window.optimizely.push({ type: 'event', eventName });
 		log(`Event: ${eventName}`);
 	};
