@@ -1,11 +1,9 @@
-// @ts-nocheck
-import { createLogger, createTracker } from '@utils/ts/helpers/Optimizely';
+import { sendTracking } from '@utils/ts/helpers/Optimizely';
 import { SELECTORS } from '../../utils/constants.ts';
 import { testID } from './testConfig.ts';
 
 const { waitForElement } = window.optimizely.get('utils');
 
-const log = createLogger(testID);
-const track = createTracker(log);
+const track = sendTracking(testID);
 
 waitForElement('body').then(() => {});

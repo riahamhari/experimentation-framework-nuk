@@ -1,5 +1,4 @@
-// @ts-nocheck
-import { createLogger, createTracker } from '@utils/ts/helpers/Optimizely';
+import { sendTracking } from '@utils/ts/helpers/Optimizely';
 import { SELECTORS } from '../../utils/constants.ts';
 import { testID } from './testConfig.ts';
 
@@ -9,10 +8,8 @@ if (location.href.includes('cfQA=true')) {
 	document.cookie = 'cfQA=true;path=/';
 }
 
-const log = createLogger(testID);
-const track = createTracker(log);
+const track = sendTracking(testID);
 
 waitForElement('body').then(() => {
-	log('experiment running');
-
+	track('experiment running');
 });

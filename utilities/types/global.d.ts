@@ -1,5 +1,4 @@
 export {};
-import { ResponseWatcher } from './interfaces.ts';
 
 declare global {
 	interface OptimizelyUtils {
@@ -13,7 +12,5 @@ declare global {
 
 	interface Window {
 		optimizely: OptimizelyClient;
-		__responseWatchers?: Map<string, ResponseWatcher>;
-		__responseWatchPatched?: boolean;
 	}
 }

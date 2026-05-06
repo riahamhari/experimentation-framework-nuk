@@ -6,9 +6,3 @@ export interface ElementOptions {
 	style?: { [key: string]: Partial<CSSStyleDeclaration> | string };
 	events?: { [key: string]: (event: Event) => void };
 }
-
-export interface ResponseWatcher {
-	pattern: string | RegExp;
-	callbacks: Set<(data: any, url: string) => void>;
-	destroy: () => void;
-}
