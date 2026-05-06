@@ -5,7 +5,6 @@ export const processWrapperTemplate = (data: TemplateData): { banner: string; fo
 	const template = readFile('../templates/outputTemplate.ts');
 
 	const processed = template
-		.replace('TEST_ID', data.testID)
 		.replace('TEST_NAME', data.testName.replace(/_/g, ' '))
 		.replace('DEVELOPER_NAME', data.developerName);
 

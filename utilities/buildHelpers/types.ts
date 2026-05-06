@@ -7,7 +7,6 @@ export type TestConfig = {
 };
 
 export interface TemplateData {
-  testID: string;
-  testName: string;
-  developerName: string;
-};
+	testName: string;
+	developerName: string;
+}

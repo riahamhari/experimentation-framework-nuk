@@ -101,8 +101,7 @@ async function compileTicket(ticketFolder: string) {
 			testConfig.testName = `${testConfig.testID} ${testConfig.testName}`;
 		}
 
-		const { banner, footer } = processWrapperTemplate({
-			testID: testConfig.testID,
+		const { banner } = processWrapperTemplate({
 			testName: `${testConfig.testName} - ${testConfig.variant}`.replace(/_/g, ' '),
 			developerName: testConfig.developerName,
 		});
@@ -118,7 +117,7 @@ async function compileTicket(ticketFolder: string) {
 				entryPoints: [tsFile],
 				bundle: true,
 				write: false,
-				format: 'esm',
+				format: 'iife',
 				target: ['es2022'],
 				minify: false,
 				treeShaking: true,
@@ -126,8 +125,6 @@ async function compileTicket(ticketFolder: string) {
 				legalComments: 'inline',
 				platform: 'browser',
 				sourcemap: false,
-				banner: { js: banner },
-				footer: { js: footer },
 				alias: { '@utils': utilitiesDir },
 			});
 		} catch (err) {
@@ -155,7 +152,15 @@ async function compileTicket(ticketFolder: string) {
 		const cssOutputFile = path.join(buildDir, 'output.css');
 		const snippetOutputFile = path.join(buildDir, 'snippet.js');
 
-		const compiledJS = jsResult.outputFiles[0].text.replace(/^\s*\/\/.*(?:\.ts|\.js|utilities|src).*$/gm, '').trim();
+		let compiledJS = jsResult.outputFiles[0].text.replace(/^\s*\/\/.*(?:\.ts|\.js|utilities|src).*$/gm, '').trim();
+
+		// Strip the IIFE wrapper esbuild adds with format: 'iife', preserving const/let
+		const iifeMatch = compiledJS.match(/^\((?:async )?\(\) => \{([\s\S]+)\}\)\(\);\s*$/);
+		if (iifeMatch) {
+			compiledJS = iifeMatch[1].trim();
+		}
+
+		compiledJS = `${banner.trim()}\n\n${compiledJS}`;
 
 		const snippet = compiledCSS
 			? `${compiledJS}\ndocument.body.insertAdjacentHTML('afterbegin', '<style>${compiledCSS.replace(/\n/g, ' ')}</style>');`
